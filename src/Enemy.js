@@ -34,7 +34,7 @@ class Enemy {
         }
     }
 
-    update() {
+    update(dt = 1) {
         const target = this.path[this.pathIndex];
         if (!target) return;
         // Vise le centre de la case fine cible
@@ -49,6 +49,7 @@ class Enemy {
         if (this.type !== 'mist' && this.isSlowed) {
             currentSpeed = this.speed * 0.5;
         }
+        currentSpeed *= dt;
 
         if (dist < currentSpeed) {
             this.pathIndex++;

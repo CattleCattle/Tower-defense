@@ -72,8 +72,33 @@ function createUI(container, game) {
         }
     };
 
+    // Bouton vague suivante
+    const nextWaveButton = document.createElement('button');
+    nextWaveButton.textContent = 'Vague suivante';
+    nextWaveButton.style.marginLeft = '30px';
+    nextWaveButton.style.display = 'none';
+    nextWaveButton.onclick = () => {
+        nextWaveButton.disabled = true;
+        nextWaveButton.style.display = 'none';
+        if (typeof game.launchNextWave === 'function') game.launchNextWave();
+    };
+
+    // Sélecteur de vitesse
+    const speedSelector = document.createElement('select');
+    speedSelector.style.marginLeft = '30px';
+    [1, 1.5, 2, 3, 4].forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = `x${val}`;
+        speedSelector.appendChild(opt);
+    });
+    speedSelector.value = '1';
+    speedSelector.onchange = () => {
+        if (typeof game.setSpeed === 'function') game.setSpeed(Number(speedSelector.value));
+    };
+
     towerButtons.append(shooterButton, diggerButton, swampButton, editPathButton);
-    uiContainer.append(glandsCounter, waveCounter, livesCounter, towerButtons);
+    uiContainer.append(glandsCounter, waveCounter, livesCounter, towerButtons, nextWaveButton, speedSelector);
     // Place l'UI sous le canvas
     if (container.querySelector('canvas')) {
         container.appendChild(uiContainer);
@@ -99,7 +124,15 @@ function createUI(container, game) {
         },
         hideEditPathButton: () => {
             editPathButton.style.display = 'none';
-        }
+        },
+        showNextWaveButton: () => {
+            nextWaveButton.style.display = '';
+            nextWaveButton.disabled = false;
+        },
+        hideNextWaveButton: () => {
+            nextWaveButton.style.display = 'none';
+        },
+        setSpeedValue: (val) => { speedSelector.value = val+''; },
     };
 // Style pour le bouton sélectionné
 const style = document.createElement('style');

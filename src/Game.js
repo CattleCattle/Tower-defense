@@ -50,6 +50,9 @@ class Game {
         this.tempPath = [];
         this.editPathExportDiv = null;
         this.finishEditBtn = null;
+
+        this.speed = 1;
+        this.lastUpdate = performance.now();
     }
     togglePathEditMode() {
         this.isEditingPath = !this.isEditingPath;
@@ -128,27 +131,41 @@ class Game {
     }
 
     start() {
-        this.spawnWave();
+        this.wave = 0;
+        this.waitingForNextWave = true;
         if (this.ui) {
-            this.ui.updateWave(this.wave);
+            this.ui.updateWave(this.wave + 1);
             this.ui.updateLives(this.lives);
+            this.ui.showNextWaveButton();
         }
         this.gameLoop();
     }
 
+    launchNextWave() {
+        this.waitingForNextWave = false;
+        this.spawnWave();
+    }
+
     gameLoop() {
         if (!this.running) return;
-
-        this.update();
+        const now = performance.now();
+        const dt = Math.min((now - this.lastUpdate) / 16.67, 4); // max x4
+        this.lastUpdate = now;
+        this.update(dt * this.speed);
         this.draw();
-
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
-    update() {
+    setSpeed(val) {
+        this.speed = val;
+        if (this.ui && typeof this.ui.setSpeedValue === 'function') this.ui.setSpeedValue(val);
+    }
+
+    update(dt = 1) {
+
         // Update Enemies
         this.enemies.forEach((enemy, index) => {
-            enemy.update();
+            enemy.update(dt);
             if (enemy.hasReachedEnd()) {
                 this.enemies.splice(index, 1);
                 this.lives--;
@@ -159,14 +176,15 @@ class Game {
             }
         });
 
-        // Update Towers
+        // Update Towers (pass dt in ms)
+        const dtMs = dt * 16.67; // dt is in "frames" (1 = 1 frame at 60fps), convert to ms
         this.towers.forEach(tower => {
             tower.update(this.enemies, (glands) => {
                 this.glands += glands;
                 if (this.ui) {
                     this.ui.updateGlands(this.glands);
                 }
-            }, this.projectiles);
+            }, this.projectiles, dtMs);
         });
 
         // Update Projectiles
@@ -193,10 +211,10 @@ class Game {
 
 
         // Check for next wave
-        if (this.enemies.length === 0 && this.wave < this.level.waves.length) {
-            this.spawnWave();
-            if (this.ui) this.ui.updateWave(this.wave);
-        } else if (this.enemies.length === 0 && this.wave >= this.level.waves.length) {
+        if (this.enemies.length === 0 && !this.waitingForNextWave && this.wave < this.level.waves.length) {
+            this.waitingForNextWave = true;
+            if (this.ui) this.ui.showNextWaveButton();
+        } else if (this.enemies.length === 0 && this.wave >= this.level.waves.length && !this.waitingForNextWave) {
             this.endGame(true);
         }
     }
@@ -340,20 +358,21 @@ class Game {
 
     spawnWave() {
         if (this.wave >= this.level.waves.length) return;
-
         const waveData = this.level.waves[this.wave];
         let spawnDelay = 0;
         Object.keys(waveData).forEach(enemyType => {
             for (let i = 0; i < waveData[enemyType]; i++) {
-                // Stagger enemy spawns
                 setTimeout(() => {
                     this.enemies.push(new Enemy(enemyType, this.level.path));
                 }, spawnDelay);
-                spawnDelay += 500; // 0.5s between each enemy
+                spawnDelay += 500;
             }
         });
-
         this.wave++;
+        if (this.ui) {
+            this.ui.updateWave(this.wave);
+            this.ui.hideNextWaveButton();
+        }
     }
 
     selectTower(towerType) {

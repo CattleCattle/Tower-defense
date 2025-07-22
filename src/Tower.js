@@ -1,6 +1,7 @@
 import { distance } from './utils/helpers.js';
 import Projectile from './Projectile.js';
 
+
 class Tower {
     constructor(x, y, type) {
         this.x = x;
@@ -8,48 +9,67 @@ class Tower {
         this.type = type;
         this.emoji = '';
         this.range = 0;
-        this.cooldown = 0;
-        this.lastActionTime = 0;
+        this.cooldown = 0; // cooldown duration in ms
+        this.cooldownTimer = 0; // time left until next action (in ms)
 
         switch (type) {
             case 'shooter':
                 this.emoji = '🐗';
-                this.range = 170; // portée augmentée
-                this.cooldown = 900; // tir plus rapide
+                this.range = 170;
+                this.cooldown = 900;
                 break;
             case 'digger':
                 this.emoji = '🐽';
                 this.range = 0;
-                this.cooldown = 4000; // génère plus souvent
+                this.cooldown = 4000;
                 break;
             case 'swamp':
                 this.emoji = '🐷';
-                this.range = 110; // zone un peu plus large
-                this.cooldown = 100; // ralentit en continu
+                this.range = 110;
+                this.cooldown = 100;
                 break;
         }
+        this.cooldownTimer = 0;
     }
 
-    update(enemies, addGlands, projectiles) {
-        const now = Date.now();
-        if (now - this.lastActionTime < this.cooldown) {
+    /**
+     * @param {Array} enemies
+     * @param {Function} addGlands
+     * @param {Array} projectiles
+     * @param {number} dt - time delta in ms (scaled by game speed)
+     */
+    update(enemies, addGlands, projectiles, dt = 16.67) {
+        // dt is in ms, default to 16.67ms (1 frame at 60fps)
+        this.cooldownTimer -= dt;
+        if (this.cooldownTimer > 0) {
+            // Not ready to act
+            if (this.type === 'swamp') {
+                // Swamp applies slow every frame
+                this.slowEnemies(enemies);
+            }
             return;
         }
 
-        this.lastActionTime = now;
-
+        // Ready to act
         switch (this.type) {
-            case 'shooter':
+            case 'shooter': {
                 const target = this.findTarget(enemies);
                 if (target) {
                     projectiles.push(new Projectile(this.x, this.y, target));
+                    this.cooldownTimer = this.cooldown;
+                } else {
+                    // No target, try again next frame
+                    this.cooldownTimer = 0;
                 }
                 break;
+            }
             case 'digger':
-                addGlands(10); // Generate 10 glands
+                addGlands(10);
+                this.cooldownTimer = this.cooldown;
                 break;
             case 'swamp':
                 this.slowEnemies(enemies);
+                this.cooldownTimer = this.cooldown;
                 break;
         }
     }
