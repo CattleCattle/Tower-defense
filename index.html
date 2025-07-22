@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanglier Tower Defense</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Sanglier Tower Defense</h1>
+    <div id="game-container"></div>
+
+    <script type="module">
+        import { initTowerDefense } from './main.js';
+
+        const container = document.getElementById('game-container');
+
+        function handleGameEnd(result) {
+            console.log('Game Over!', result);
+            const message = result.win 
+                ? `You won! Rewards: ${result.rewards.glands} glands, ${result.rewards.reputation} reputation.`
+                : 'You lost. Better luck next time!';
+            
+            const endMessage = document.createElement('h2');
+            endMessage.innerText = message;
+            container.appendChild(endMessage);
+        }
+
+        initTowerDefense(container, handleGameEnd);
+    </script>
+</body>
+</html>
