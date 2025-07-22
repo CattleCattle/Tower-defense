@@ -5,28 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sanglier Tower Defense</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
 </head>
 <body>
     <h1>Sanglier Tower Defense</h1>
     <div id="game-container"></div>
 
     <script type="module">
-        import { initTowerDefense } from './main.js';
+        import { startPhaserGame } from './src/phaser-loader.js';
 
         const container = document.getElementById('game-container');
 
-        function handleGameEnd(result) {
-            console.log('Game Over!', result);
-            const message = result.win 
-                ? `You won! Rewards: ${result.rewards.glands} glands, ${result.rewards.reputation} reputation.`
-                : 'You lost. Better luck next time!';
-            
-            const endMessage = document.createElement('h2');
-            endMessage.innerText = message;
-            container.appendChild(endMessage);
+        function clearContainer() {
+            // Supprime tous les enfants du conteneur (canvas, etc.)
+            while(container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
         }
 
-        initTowerDefense(container, handleGameEnd);
+        // Lance directement la version Phaser
+        clearContainer();
+        startPhaserGame(container);
     </script>
 </body>
 </html>

@@ -1,44 +1,39 @@
-import { distance } from "./utils/helpers.js";
-
-class Projectile {
-    constructor(startX, startY, target) {
-        this.x = startX;
-        this.y = startY;
+// Classe Projectile pour Tower Defense
+export default class Projectile {
+    constructor(scene, x, y, target, config) {
+        this.scene = scene;
+        this.x = x;
+        this.y = y;
         this.target = target;
-        this.speed = 5;
-        this.damage = 8;
-        this.emoji = '🌰';
+        this.speed = config.speed;
+        this.damage = config.damage;
+        this.hasHit = false;
+        this.distanceTraveled = 0;
+        if (config.emoji) {
+            this.sprite = scene.add.text(x, y, config.emoji, { font: '24px Arial' }).setOrigin(0.5);
+        } else {
+            this.sprite = scene.add.circle(x, y, 4, config.color || 0xffff00);
+        }
     }
 
-    update() {
-        if (!this.target || this.target.health <= 0) {
-            // Simple projectile, continues straight if target is gone
-            // A more advanced version would retarget or fizzle.
-            // For now, let's just make it disappear to avoid errors.
-            this.x = -1000; // Effectively remove it
+    update(deltaMs) {
+        if (this.hasHit) return;
+        const deltaSeconds = deltaMs / 1000;
+        const dx = this.target.sprite.x - this.x;
+        const dy = this.target.sprite.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 10) {
+            this.hasHit = true;
             return;
         }
-        
-        const dx = this.target.x - this.x;
-        const dy = this.target.y - this.y;
-        const dist = distance(this, this.target);
-
-        if (dist < this.speed) {
-            // Hit logic is in Game.js to handle enemy health and removal
-        } else {
-            this.x += (dx / dist) * this.speed;
-            this.y += (dy / dist) * this.speed;
-        }
+        const moveDistance = this.speed * deltaSeconds;
+        this.x += (dx / distance) * moveDistance;
+        this.y += (dy / distance) * moveDistance;
+        this.distanceTraveled += moveDistance;
+        this.sprite.setPosition(this.x, this.y);
     }
 
-    draw(ctx) {
-        ctx.font = '15px Arial';
-        ctx.fillText(this.emoji, this.x, this.y);
-    }
-
-    isOffscreen(width, height) {
-        return this.x < 0 || this.x > width || this.y < 0 || this.y > height;
+    destroy() {
+        if (this.sprite) this.sprite.destroy();
     }
 }
-
-export default Projectile;

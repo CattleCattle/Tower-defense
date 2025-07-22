@@ -1,0 +1,11 @@
+{
+  "section1": {
+    "files": [
+      {
+        "type": "image",
+        "key": "background",
+        "url": "src/assets/map.png"
+      }
+    ]
+  }
+}

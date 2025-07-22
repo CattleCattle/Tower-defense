@@ -1,148 +1,129 @@
-// a:/Tower defense/src/ui/ui.js
-
-function createUI(container, game) {
-    const uiContainer = document.createElement('div');
-    uiContainer.style.position = 'relative';
-    uiContainer.style.margin = '0 auto';
-    uiContainer.style.top = '0';
-    uiContainer.style.left = '0';
-    uiContainer.style.width = '960px';
-    uiContainer.style.display = 'flex';
-    uiContainer.style.justifyContent = 'center';
-    uiContainer.style.alignItems = 'center';
-    uiContainer.style.gap = '30px';
-    uiContainer.style.color = 'white';
-    uiContainer.style.fontFamily = 'Arial, sans-serif';
-    uiContainer.style.background = 'rgba(30,30,30,0.95)';
-    uiContainer.style.borderRadius = '0 0 16px 16px';
-    uiContainer.style.padding = '16px 0 12px 0';
-    uiContainer.style.zIndex = 10;
-
-
-    const glandsCounter = document.createElement('div');
-    glandsCounter.id = 'glands-counter';
-    glandsCounter.innerText = `Glands: ${game.glands}`;
-
-    const waveCounter = document.createElement('div');
-    waveCounter.id = 'wave-counter';
-    waveCounter.innerText = `Vague : 1`;
-
-    const livesCounter = document.createElement('div');
-    livesCounter.id = 'lives-counter';
-    livesCounter.innerText = `Vies : 20`;
-
-    const towerButtons = document.createElement('div');
-    towerButtons.style.marginTop = '10px';
-
-
-    // Coûts synchronisés avec Game.js
-    const costs = { shooter: 60, digger: 120, swamp: 90 };
-
-    const shooterButton = document.createElement('button');
-    shooterButton.innerHTML = `🐗 (${costs.shooter})`;
-    shooterButton.onclick = () => select('shooter');
-
-    const diggerButton = document.createElement('button');
-    diggerButton.innerHTML = `🐽 (${costs.digger})`;
-    diggerButton.onclick = () => select('digger');
-
-    const swampButton = document.createElement('button');
-    swampButton.innerHTML = `🐷 (${costs.swamp})`;
-    swampButton.onclick = () => select('swamp');
-
-    function select(type) {
-        game.selectTower(type);
-        [shooterButton, diggerButton, swampButton].forEach(btn => btn.classList.remove('selected'));
-        if (type === 'shooter') shooterButton.classList.add('selected');
-        if (type === 'digger') diggerButton.classList.add('selected');
-        if (type === 'swamp') swampButton.classList.add('selected');
+// UIManager centralise la gestion de l'interface du jeu (textes, boutons, achats, upgrades, etc.)
+export default class UIManager {
+    constructor(scene) {
+        this.scene = scene;
+        // Textes ressources
+        this.glandsText = scene.add.text(20, 20, '', this.textStyle()).setDepth(100);
+        this.livesText = scene.add.text(20, 50, '', this.textStyle()).setDepth(100);
+        this.waveText = scene.add.text(20, 80, '', this.textStyle()).setDepth(100);
+        // Boutons tours
+        this.towerButtons = [];
+        // Bouton vague suivante
+        this.nextWaveButton = null;
+        // Bouton vendre
+        this.sellButton = null;
+        // Callbacks externes
+        this.onBuy = null;
+        this.onSell = null;
+        this.onNextWave = null;
+        this.onUpgrade = null;
     }
 
+    textStyle() {
+        return {
+            font: 'bold 18px Arial',
+            color: '#ffffff',
+            backgroundColor: '#000000',
+            padding: { x: 8, y: 4 }
+        };
+    }
 
+    setGlands(value) {
+        this.glandsText.setText(`Glands: ${value}`);
+    }
+    setLives(value) {
+        this.livesText.setText(`Vies: ${value}`);
+    }
+    setWave(value) {
+        this.waveText.setText(`Wave: ${value}`);
+    }
 
-    // Ajout du bouton d'édition de chemin
-    const editPathButton = document.createElement('button');
-    editPathButton.textContent = 'Éditer le chemin';
-    editPathButton.style.marginLeft = '20px';
-    editPathButton.onclick = () => {
-        if (typeof game.togglePathEditMode === 'function') {
-            game.togglePathEditMode();
-        } else {
-            alert('Mode édition de chemin non disponible.');
+    createTowerButtons(towerTypes, startX, y, spacing) {
+        this.towerButtons.forEach(btn => btn.destroy());
+        this.towerButtons = [];
+        towerTypes.forEach((info, i) => {
+            const btn = this.scene.add.text(startX + i * spacing, y, info.label, {
+                font: '16px Arial',
+                color: '#fff',
+                backgroundColor: '#444',
+                padding: { x: 10, y: 5 }
+            }).setOrigin(0.5).setInteractive().setDepth(100);
+            btn.on('pointerdown', () => this.onBuy && this.onBuy(info.type));
+            this.towerButtons.push({ button: btn, type: info.type });
+        });
+    }
+
+    updateTowerButtonsAffordability(glands, getTowerInfoCallback) {
+        this.towerButtons.forEach(btnInfo => {
+            const towerInfo = getTowerInfoCallback(btnInfo.type);
+            if (towerInfo) {
+                const canAfford = glands >= towerInfo.cost;
+                btnInfo.button.setTint(canAfford ? 0xffffff : 0x666666);
+                btnInfo.button.setAlpha(canAfford ? 1.0 : 0.6);
+            }
+        });
+    }
+
+    createNextWaveButton(x, y, callback) {
+        if (this.nextWaveButton) this.nextWaveButton.destroy();
+        this.nextWaveButton = this.scene.add.text(x, y, 'Vague Suivante', {
+            font: '20px Arial', fill: '#fff', backgroundColor: '#000'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(200);
+        if (callback) {
+            this.nextWaveButton.on('pointerdown', callback);
         }
-    };
-
-    // Bouton vague suivante
-    const nextWaveButton = document.createElement('button');
-    nextWaveButton.textContent = 'Vague suivante';
-    nextWaveButton.style.marginLeft = '30px';
-    nextWaveButton.style.display = 'none';
-    nextWaveButton.onclick = () => {
-        nextWaveButton.disabled = true;
-        nextWaveButton.style.display = 'none';
-        if (typeof game.launchNextWave === 'function') game.launchNextWave();
-    };
-
-    // Sélecteur de vitesse
-    const speedSelector = document.createElement('select');
-    speedSelector.style.marginLeft = '30px';
-    [1, 1.5, 2, 3, 4].forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = `x${val}`;
-        speedSelector.appendChild(opt);
-    });
-    speedSelector.value = '1';
-    speedSelector.onchange = () => {
-        if (typeof game.setSpeed === 'function') game.setSpeed(Number(speedSelector.value));
-    };
-
-    towerButtons.append(shooterButton, diggerButton, swampButton, editPathButton);
-    uiContainer.append(glandsCounter, waveCounter, livesCounter, towerButtons, nextWaveButton, speedSelector);
-    // Place l'UI sous le canvas
-    if (container.querySelector('canvas')) {
-        container.appendChild(uiContainer);
-    } else {
-        container.append(uiContainer);
     }
 
-    return {
-        updateGlands: (glands) => {
-            glandsCounter.innerText = `Glands: ${glands}`;
-            shooterButton.disabled = glands < costs.shooter;
-            diggerButton.disabled = glands < costs.digger;
-            swampButton.disabled = glands < costs.swamp;
-        },
-        updateWave: (wave) => {
-            waveCounter.innerText = `Vague : ${wave}`;
-        },
-        updateLives: (lives) => {
-            livesCounter.innerText = `Vies : ${lives}`;
-        },
-        showEditPathButton: () => {
-            editPathButton.style.display = '';
-        },
-        hideEditPathButton: () => {
-            editPathButton.style.display = 'none';
-        },
-        showNextWaveButton: () => {
-            nextWaveButton.style.display = '';
-            nextWaveButton.disabled = false;
-        },
-        hideNextWaveButton: () => {
-            nextWaveButton.style.display = 'none';
-        },
-        setSpeedValue: (val) => { speedSelector.value = val+''; },
-    };
-// Style pour le bouton sélectionné
-const style = document.createElement('style');
-style.innerHTML = `
-button.selected {
-    outline: 3px solid #fff200;
-    background: #444;
-    color: #fff200;
-}`;
-document.head.appendChild(style);
-}
+    createSellButton(x, y) {
+        if (this.sellButton) this.sellButton.destroy();
+        this.sellButton = this.scene.add.text(x, y, 'Vendre Tour', {
+            font: '20px Arial', fill: '#fff', backgroundColor: '#555'
+        }).setPadding(10).setInteractive().setDepth(100);
+        this.sellButton.on('pointerdown', () => this.onSell && this.onSell());
+    }
 
-export { createUI };
+    // Pour upgrades, à compléter selon besoins
+    createUpgradeButton(x, y, label) {
+        const btn = this.scene.add.text(x, y, label, {
+            font: '16px Arial', color: '#fff', backgroundColor: '#228', padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive().setDepth(100);
+        btn.on('pointerdown', () => this.onUpgrade && this.onUpgrade());
+        return btn;
+    }
+
+    createSpeedSlider(x, y, initialSpeed = 1) {
+        if (this.speedSlider) this.speedSlider.destroy();
+        const speeds = [1, 2, 3, 4];
+        this.currentSpeed = initialSpeed;
+        this.speedSlider = this.scene.add.container(x, y);
+        this.speedSlider.setDepth(200);
+        const label = this.scene.add.text(0, 0, 'Vitesse', { font: '16px Arial', color: '#fff', backgroundColor: '#228', padding: { x: 8, y: 2 } }).setOrigin(1, 0).setDepth(201);
+        this.speedSlider.add(label);
+        const sliderY = 28;
+        const sliderW = 120;
+        const sliderH = 18;
+        const sliderBg = this.scene.add.graphics();
+        sliderBg.fillStyle(0x222a38, 0.8);
+        sliderBg.fillRoundedRect(-sliderW, sliderY, sliderW, sliderH, 8);
+        sliderBg.setDepth(200);
+        this.speedSlider.add(sliderBg);
+        // Créer les 4 steps
+        this.speedSlider.steps = [];
+        speeds.forEach((s, i) => {
+            const stepX = -sliderW + (i * (sliderW / 3));
+            const circle = this.scene.add.circle(stepX, sliderY + sliderH/2, 10, s === this.currentSpeed ? 0x00c3ff : 0x888888, 1).setDepth(201);
+            circle.setInteractive({ useHandCursor: true });
+            circle.on('pointerdown', () => {
+                this.currentSpeed = s;
+                this.speedSlider.steps.forEach((c, j) => c.setFillStyle(j+1 === s ? 0x00c3ff : 0x888888, 1));
+                if (this.onSpeedChange) this.onSpeedChange(s);
+            });
+            this.speedSlider.add(circle);
+            this.speedSlider.steps.push(circle);
+            const txt = this.scene.add.text(stepX, sliderY + sliderH/2 + 13, `×${s}`, { font: '13px Arial', color: '#fff' }).setOrigin(0.5, 0).setDepth(201);
+            this.speedSlider.add(txt);
+        });
+        this.speedSlider.setSize(sliderW, sliderY + sliderH + 30);
+        this.speedSlider.setInteractive(new Phaser.Geom.Rectangle(-sliderW, 0, sliderW, sliderY + sliderH + 30), Phaser.Geom.Rectangle.Contains);
+    }
+}

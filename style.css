@@ -7,8 +7,7 @@ body {
     padding: 20px;
 }
 
-/* Container for the game */
-/* Container for the game */
+/* Container for the Phaser game */
 #game-container {
     position: relative;
     width: 960px;
@@ -20,44 +19,6 @@ body {
 }
 
 canvas {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 0;
     display: block;
     background-color: #34673b;
-}
-
-/* UI container always above canvas */
-div[style*='absolute'] {
-    z-index: 2 !important;
-    background: rgba(30, 50, 30, 0.85);
-    min-width: 320px;
-    padding: 12px 16px 8px 16px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-button {
-    background-color: #c0392b;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    margin: 5px;
-    font-size: 24px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #e74c3c;
-}
-
-#glands-counter {
-    font-size: 24px;
-    font-weight: bold;
-    background: rgba(0,0,0,0.5);
-    padding: 10px;
-    border-radius: 5px;
 }

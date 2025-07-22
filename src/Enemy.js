@@ -1,87 +1,60 @@
-import { distance } from './utils/helpers.js';
-
-class Enemy {
-    constructor(type, path) {
+// Classe Enemy pour Tower Defense
+export default class Enemy {
+    constructor(scene, type, path, config) {
+        this.scene = scene;
         this.type = type;
         this.path = path;
         this.pathIndex = 0;
-        // Grille fine : 32x18, case = 30px
-        this.gridSize = 30;
-        // On part du centre de la première case fine
-        this.x = path[0].col * this.gridSize + this.gridSize / 2;
-        this.y = path[0].row * this.gridSize + this.gridSize / 2;
-        this.emoji = '';
-        this.speed = 0;
-        this.health = 0;
+        this.progress = 0;
+        this.speed = config.speed;
+        this.health = config.health;
+        this.maxHealth = config.health;
         this.isSlowed = false;
+        this.emoji = config.emoji;
+        const start = path[0];
+        this.sprite = scene.add.text(
+            start.col * config.pathGridSize + config.pathGridSize / 2,
+            start.row * config.pathGridSize + config.pathGridSize / 2,
+            config.emoji,
+            { font: '24px Arial' }
+        ).setOrigin(0.5);
 
-        switch (type) {
-            case 'bramble':
-                this.emoji = '🌿';
-                this.speed = 0.9; // lent
-                this.health = 16; // résistant
-                break;
-            case 'swarm':
-                this.emoji = '🐝';
-                this.speed = 2.2; // rapide
-                this.health = 6; // fragile
-                break;
-            case 'mist':
-                this.emoji = '🌫️';
-                this.speed = 1.3; // intermédiaire
-                this.health = 12; // moyenne
-                break;
-        }
+        // Ajout de la barre de vie
+        this.healthBarBg = scene.add.graphics();
+        this.healthBar = scene.add.graphics();
+        this.updateHealthBar();
     }
 
-    update(dt = 1) {
-        const target = this.path[this.pathIndex];
-        if (!target) return;
-        // Vise le centre de la case fine cible
-        const tx = target.col * this.gridSize + this.gridSize / 2;
-        const ty = target.row * this.gridSize + this.gridSize / 2;
-        const dx = tx - this.x;
-        const dy = ty - this.y;
-        const dist = distance({x: this.x, y: this.y}, {x: tx, y: ty});
-
-        // Brume insensible au ralentissement
-        let currentSpeed = this.speed;
-        if (this.type !== 'mist' && this.isSlowed) {
-            currentSpeed = this.speed * 0.5;
-        }
-        currentSpeed *= dt;
-
-        if (dist < currentSpeed) {
-            this.pathIndex++;
-        } else {
-            this.x += (dx / dist) * currentSpeed;
-            this.y += (dy / dist) * currentSpeed;
-        }
+    updateHealthBar() {
+        const width = 24;
+        const height = 4;
+        const x = this.sprite.x - width / 2;
+        const y = this.sprite.y - 20;
+        // Fond
+        this.healthBarBg.clear();
+        this.healthBarBg.fillStyle(0x333333, 1);
+        this.healthBarBg.fillRect(x, y, width, height);
+        // Barre de vie
+        this.healthBar.clear();
+        const percent = Math.max(0, this.health / this.maxHealth);
+        const color = percent > 0.3 ? 0x00ff00 : 0xff0000;
+        this.healthBar.fillStyle(color, 1);
+        this.healthBar.fillRect(x, y, width * percent, height);
     }
 
-    draw(ctx) {
-        ctx.font = '20px Arial';
-        ctx.fillText(this.emoji, this.x - 10, this.y + 10); // Center emoji
-        
-        // Health bar
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x - 15, this.y - 15, 30, 5);
-        ctx.fillStyle = 'green';
-        ctx.fillRect(this.x - 15, this.y - 15, 30 * (this.health / this.getMaxHealth()), 5);
+    update(deltaMs) {
+        // Déplacement et gestion de la progression sur le chemin à implémenter dans la scène
+        // La position de la barre de vie sera mise à jour dans updateEnemy côté scène
+        this.updateHealthBar();
     }
 
-    getMaxHealth() {
-        switch (this.type) {
-            case 'bramble': return 16;
-            case 'swarm': return 6;
-            case 'mist': return 12;
-            default: return 1;
-        }
+    takeDamage(amount) {
+        this.health -= amount;
     }
 
-    hasReachedEnd() {
-        return this.pathIndex >= this.path.length;
+    destroy() {
+        if (this.sprite) this.sprite.destroy();
+        if (this.healthBar) this.healthBar.destroy();
+        if (this.healthBarBg) this.healthBarBg.destroy();
     }
 }
-
-export default Enemy;
