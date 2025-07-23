@@ -40,7 +40,7 @@ class MainScene extends Phaser.Scene {
         this.pathGridSize = 30;
 
         // Initialiser les variables de jeu
-        this.glands = 200;
+        this.glands = 130;
         this.lives = 20;
         this.wave = 0;
         this.selectedTower = null;
@@ -705,7 +705,6 @@ class MainScene extends Phaser.Scene {
         // Chercher l'ennemi le plus proche du point d'impact
         let closestEnemy = null;
         let minDistance = 20; // Rayon de détection
-        
         this.enemies.forEach(enemy => {
             const dist = Math.sqrt(
                 (projectile.targetX - enemy.sprite.x) ** 2 +
@@ -716,17 +715,18 @@ class MainScene extends Phaser.Scene {
                 closestEnemy = enemy;
             }
         });
-        
         if (closestEnemy) {
-            closestEnemy.health -= 1;
+            closestEnemy.health -= projectile.damage;
             if (closestEnemy.health <= 0) {
-                this.glands += 5;
+                // Gain d'or variable selon la vague/type
+                let reward = 5;
+                if (this.wave >= 10) reward = 10;
+                if (closestEnemy.type === 'rat_boss') reward = 20;
+                this.glands += reward;
                 this.updateGlandsDisplay();
-                closestEnemy.sprite.destroy();
+                closestEnemy.destroy();
                 const index = this.enemies.indexOf(closestEnemy);
                 if (index > -1) this.enemies.splice(index, 1);
-                
-                // Vérifier si la vague est terminée après élimination d'ennemi
                 this.checkWaveComplete();
             }
         }

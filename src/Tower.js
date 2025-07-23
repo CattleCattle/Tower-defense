@@ -2,13 +2,13 @@ import Projectile from './Projectile.js';
 // Classe Tower pour Tower Defense
 export default class Tower {
     static LEVELS = [
-        { damage: 1, range: 170, cooldown: 900, cost: 60 },
-        { damage: 2, range: 170, cooldown: 850, cost: 90 },
-        { damage: 3, range: 180, cooldown: 800, cost: 130 },
-        { damage: 4, range: 190, cooldown: 750, cost: 180 },
-        { damage: 6, range: 200, cooldown: 700, cost: 250 },
-        { damage: 8, range: 210, cooldown: 650, cost: 350 },
-        { damage: 11, range: 220, cooldown: 600, cost: 500 },
+        { damage: 2, range: 170, cooldown: 900, cost: 60 },
+        { damage: 3, range: 170, cooldown: 850, cost: 90 },
+        { damage: 4, range: 180, cooldown: 800, cost: 130 },
+        { damage: 6, range: 190, cooldown: 750, cost: 180 },
+        { damage: 8, range: 200, cooldown: 700, cost: 250 },
+        { damage: 10, range: 210, cooldown: 650, cost: 350 },
+        { damage: 15, range: 220, cooldown: 650, cost: 500 },
     ];
 
     constructor(scene, type, col, row, config) {

@@ -40,34 +40,35 @@ path: [
     { col: 23, row: 17 }
 ],
     waves: [
-        // Vague 1-2 : que des rats basiques
+        // Vague 1
         { 'rat_basic': 8 },
+        // Vague 2
         { 'rat_basic': 10 },
-        // Vague 3 : introduction du rat rapide
-        { 'rat_basic': 8, 'rat_fast': 1 },
-        // Vague 4 : mélange
-        { 'rat_basic': 8, 'rat_fast': 2 },
-        // Vague 5 : plus de rapides
-        { 'rat_basic': 6, 'rat_fast': 4 },
-        // Vague 6 : introduction du rat blindé
-        { 'rat_basic': 6, 'rat_fast': 3, 'rat_tank': 1 },
-        // Vague 7 : mélange
-        { 'rat_basic': 5, 'rat_fast': 3, 'rat_tank': 2 },
-        // Vague 8 : plus de blindés
+        // Vague 3
+        { 'rat_basic': 9, 'rat_fast': 3 },
+        // Vague 4
+        { 'rat_basic': 9, 'rat_fast': 4 },
+        // Vague 5
+        { 'rat_basic': 9, 'rat_fast': 5 },
+        // Vague 6
+        { 'rat_basic': 6, 'rat_fast': 4, 'rat_tank': 2 },
+        // Vague 7
         { 'rat_basic': 4, 'rat_fast': 4, 'rat_tank': 3 },
-        // Vague 9 : introduction du rat toxique
-        { 'rat_basic': 4, 'rat_fast': 3, 'rat_tank': 2, 'rat_poison': 1 },
-        // Vague 10 : mélange
-        { 'rat_basic': 3, 'rat_fast': 4, 'rat_tank': 2, 'rat_poison': 2 },
-        // Vague 11 : introduction du rat voleur
-        { 'rat_basic': 3, 'rat_fast': 3, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 1 },
-        // Vague 12 : mélange
-        { 'rat_basic': 2, 'rat_fast': 4, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2 },
-        // Vague 13 : introduction du rat dodu et fouisseur
-        { 'rat_basic': 2, 'rat_fast': 3, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2, 'rat_gros': 1, 'rat_fouisseur': 1 },
-        // Vague 14 : mélange
-        { 'rat_basic': 2, 'rat_fast': 3, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2, 'rat_gros': 2, 'rat_fouisseur': 2 },
-        // Vague 15 : boss et tous les types
+        // Vague 8
+        { 'rat_basic': 2, 'rat_fast': 6, 'rat_tank': 4 },
+        // Vague 9
+        { 'rat_basic': 2, 'rat_fast': 4, 'rat_tank': 3, 'rat_poison': 3 },
+        // Vague 10
+        { 'rat_basic': 3, 'rat_fast': 5, 'rat_tank': 3, 'rat_poison': 3 },
+        // Vague 11
+        { 'rat_basic': 3, 'rat_fast': 3, 'rat_tank': 3, 'rat_poison': 3, 'rat_vole': 2 },
+        // Vague 12
+        { 'rat_basic': 3, 'rat_fast': 3, 'rat_tank': 3, 'rat_poison': 3, 'rat_vole': 3 },
+        // Vague 13
+        { 'rat_basic': 2, 'rat_fast': 2, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2, 'rat_gros': 1, 'rat_fouisseur': 2 },
+        // Vague 14
+        { 'rat_basic': 2, 'rat_fast': 2, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2, 'rat_gros': 2, 'rat_fouisseur': 2 },
+        // Vague 15
         { 'rat_basic': 2, 'rat_fast': 3, 'rat_tank': 2, 'rat_poison': 2, 'rat_vole': 2, 'rat_gros': 2, 'rat_fouisseur': 2, 'rat_rapide': 2, 'rat_boss': 1 },
     ]
 };
